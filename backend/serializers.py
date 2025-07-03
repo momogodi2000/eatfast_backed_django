@@ -4,12 +4,12 @@ from django.core.validators import EmailValidator, URLValidator
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.password_validation import validate_password
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
+from django.utils import timezone
 from .models import (
     User, ContactMessage, ContactResponse, PartnerApplication, 
     PartnerDocument, ContactAnalytics, PartnerAnalytics
 )
 import re
-import magic
 
 class ContactMessageSerializer(serializers.ModelSerializer):
     """Serializer for contact message submission"""
@@ -161,7 +161,7 @@ class PartnerDocumentSerializer(serializers.ModelSerializer):
                 _("La taille du fichier ne peut pas dépasser 10 MB.")
             )
         
-        # Check file type
+        # Check file type using content_type
         allowed_types = [
             'application/pdf',
             'application/msword',
@@ -171,15 +171,8 @@ class PartnerDocumentSerializer(serializers.ModelSerializer):
             'image/png',
         ]
         
-        # Get MIME type
-        if isinstance(value, (InMemoryUploadedFile, TemporaryUploadedFile)):
-            try:
-                mime_type = magic.from_buffer(value.read(1024), mime=True)
-                value.seek(0)  # Reset file pointer
-            except:
-                mime_type = value.content_type
-        else:
-            mime_type = value.content_type
+        # Get MIME type from content_type
+        mime_type = getattr(value, 'content_type', 'application/octet-stream')
         
         if mime_type not in allowed_types:
             raise serializers.ValidationError(
@@ -314,7 +307,6 @@ class PartnerApplicationSerializer(serializers.ModelSerializer):
     
     def _create_documents(self, application, files_data):
         """Create document instances for the application"""
-        import magic
         
         # Document type mapping
         doc_type_mapping = {
@@ -339,12 +331,8 @@ class PartnerApplicationSerializer(serializers.ModelSerializer):
     
     def _create_single_document(self, application, doc_type, file_data):
         """Create a single document instance"""
-        try:
-            # Get MIME type
-            mime_type = magic.from_buffer(file_data.read(1024), mime=True)
-            file_data.seek(0)  # Reset file pointer
-        except:
-            mime_type = getattr(file_data, 'content_type', 'application/octet-stream')
+        # Get MIME type from content_type
+        mime_type = getattr(file_data, 'content_type', 'application/octet-stream')
         
         PartnerDocument.objects.create(
             application=application,
@@ -500,5 +488,3 @@ class BulkPartnerUpdateSerializer(serializers.Serializer):
     action = serializers.ChoiceField(choices=['approve', 'reject', 'review'])
     rejection_reason = serializers.CharField(required=False, max_length=1000)
     review_notes = serializers.CharField(required=False, max_length=1000)
-
-
