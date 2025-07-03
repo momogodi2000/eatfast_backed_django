@@ -1,6 +1,6 @@
 """
 Django settings for eatfast_backend project.
-Fixed version addressing deployment errors.
+Updated to use SQLite for local development and PostgreSQL for production.
 """
 
 import os
@@ -101,21 +101,19 @@ WSGI_APPLICATION = 'eatfast_backend.wsgi.application'
 # DATABASE CONFIGURATION
 # ==============================================================================
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=config(
-            'DATABASE_URL', 
-            default=f'postgresql://{config("DB_USER", default="")}:'
-                   f'{config("DB_PASSWORD", default="")}@'
-                   f'{config("DB_HOST", default="localhost")}:'
-                   f'{config("DB_PORT", default="5432")}/'
-                   f'{config("DB_NAME", default="eatfast_db")}'
-        )
-    )
-}
+# Check if we're in production (Render) or development
+IS_PRODUCTION = config('DATABASE_URL', default=None) is not None
 
-# Database connection pooling (production)
-if not DEBUG:
+if IS_PRODUCTION:
+    # Production: Use PostgreSQL on Render
+    print("🚀 Using PostgreSQL for production")
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL')
+        )
+    }
+    
+    # Database connection pooling for production
     DATABASES['default'].update({
         'CONN_MAX_AGE': 600,
         'OPTIONS': {
@@ -123,33 +121,69 @@ if not DEBUG:
             'MIN_CONNS': 5,
         }
     })
+else:
+    # Development: Use SQLite for local development
+    print("💻 Using SQLite for local development")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+# Commented out: Original PostgreSQL configuration for reference
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=config(
+#             'DATABASE_URL', 
+#             default=f'postgresql://{config("DB_USER", default="")}:'
+#                    f'{config("DB_PASSWORD", default="")}@'
+#                    f'{config("DB_HOST", default="localhost")}:'
+#                    f'{config("DB_PORT", default="5432")}/'
+#                    f'{config("DB_NAME", default="eatfast_db")}'
+#         )
+#     )
+# }
 
 # ==============================================================================
 # CACHE CONFIGURATION
 # ==============================================================================
 
-# Use dummy cache if Redis not available
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-    }
-}
-
-# Try to use Redis if available
-try:
-    redis_url = config('REDIS_URL', default=None)
-    if redis_url:
-        CACHES = {
-            'default': {
-                'BACKEND': 'django_redis.cache.RedisCache',
-                'LOCATION': redis_url,
-                'OPTIONS': {
-                    'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+if IS_PRODUCTION:
+    # Production: Try to use Redis if available
+    try:
+        redis_url = config('REDIS_URL', default=None)
+        if redis_url:
+            CACHES = {
+                'default': {
+                    'BACKEND': 'django_redis.cache.RedisCache',
+                    'LOCATION': redis_url,
+                    'OPTIONS': {
+                        'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                    }
                 }
             }
+        else:
+            # Fallback to dummy cache
+            CACHES = {
+                'default': {
+                    'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+                }
+            }
+    except:
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            }
         }
-except:
-    pass
+else:
+    # Development: Use local memory cache
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'eatfast-cache',
+        }
+    }
 
 # ==============================================================================
 # SESSION CONFIGURATION
@@ -277,15 +311,20 @@ CORS_ALLOW_HEADERS = [
 # EMAIL CONFIGURATION
 # ==============================================================================
 
-EMAIL_BACKEND = config(
-    'EMAIL_BACKEND', 
-    default='django.core.mail.backends.console.EmailBackend'
-)
-EMAIL_HOST = config('EMAIL_HOST', default='')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+if IS_PRODUCTION:
+    # Production email settings
+    EMAIL_BACKEND = config(
+        'EMAIL_BACKEND', 
+        default='django.core.mail.backends.smtp.EmailBackend'
+    )
+    EMAIL_HOST = config('EMAIL_HOST', default='')
+    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+else:
+    # Development: Console email backend (prints emails to console)
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Email Configuration for Contact & Partner
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@eatfast.cm')
@@ -297,7 +336,8 @@ ADMINS = [
 # SECURITY SETTINGS
 # ==============================================================================
 
-if not DEBUG:
+if IS_PRODUCTION:
+    # Production security settings
     # HTTPS Security
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -321,6 +361,9 @@ if not DEBUG:
     
     # Render.com specific settings
     ALLOWED_HOSTS.append('.render.com')
+else:
+    # Development: Relaxed security settings
+    ALLOWED_HOSTS = ['*']
 
 # ==============================================================================
 # LOGGING CONFIGURATION
@@ -408,21 +451,19 @@ EATFAST_SETTINGS = {
 # ==============================================================================
 
 # Development specific settings
-if DEBUG:
-    # Allow all hosts in development
-    ALLOWED_HOSTS = ['*']
-    
-    # Enable Django Debug Toolbar if installed
+if DEBUG and not IS_PRODUCTION:
+    # Enable Django Debug Toolbar if installed (only in development)
     try:
         import debug_toolbar
         INSTALLED_APPS.append('debug_toolbar')
         MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
         INTERNAL_IPS = ['127.0.0.1', 'localhost']
+        print("🔧 Debug Toolbar enabled for development")
     except ImportError:
         pass
 
 # Production specific settings
-else:
+if IS_PRODUCTION:
     # Additional production middleware
     MIDDLEWARE.insert(1, 'django.middleware.cache.UpdateCacheMiddleware')
     MIDDLEWARE.append('django.middleware.cache.FetchFromCacheMiddleware')
@@ -431,3 +472,21 @@ else:
     CACHE_MIDDLEWARE_ALIAS = 'default'
     CACHE_MIDDLEWARE_SECONDS = 600
     CACHE_MIDDLEWARE_KEY_PREFIX = 'eatfast'
+    
+    print("🚀 Production settings loaded")
+else:
+    print("💻 Development settings loaded")
+
+# ==============================================================================
+# DATABASE INFORMATION
+# ==============================================================================
+
+# Print database info for debugging
+if DEBUG:
+    db_engine = DATABASES['default']['ENGINE']
+    if 'sqlite' in db_engine:
+        print(f"📁 Database: SQLite at {DATABASES['default']['NAME']}")
+    elif 'postgresql' in db_engine:
+        print(f"🐘 Database: PostgreSQL at {DATABASES['default'].get('HOST', 'Render')}")
+    else:
+        print(f"🗄️ Database: {db_engine}")

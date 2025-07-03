@@ -1,45 +1,33 @@
 #!/usr/bin/env bash
-# migration_script.sh
-# Script to handle database migrations and setup
+# fix_migrations.sh
+# Script to fix migration history issues
 
 set -o errexit
 
-echo "🚀 Starting EatFast backend setup..."
+echo "🔧 Fixing Django migration history issues..."
 
-# 1. Install dependencies
-echo "📦 Installing Python dependencies..."
-pip install -r requirements.txt
+# Option 1: Reset all migrations and start fresh
+echo "📝 Resetting migration history..."
 
-# 2. Create migrations for backend app
-echo "🔄 Creating migrations..."
-python manage.py makemigrations backend
+# Fake-apply Django's built-in migrations first
+echo "⚡ Fake-applying Django admin migrations..."
+python manage.py migrate admin 0001 --fake
 
-# 3. Apply all migrations
-echo "🗄️ Applying migrations..."
+echo "⚡ Fake-applying Django auth migrations..."
+python manage.py migrate auth 0001 --fake
+
+echo "⚡ Fake-applying Django contenttypes migrations..."
+python manage.py migrate contenttypes 0001 --fake
+
+echo "⚡ Fake-applying Django sessions migrations..."
+python manage.py migrate sessions 0001 --fake
+
+# Now apply our backend migrations
+echo "🗄️ Applying backend migrations..."
+python manage.py migrate backend 0001 --fake-initial
+
+# Apply remaining migrations normally
+echo "🔄 Applying all remaining migrations..."
 python manage.py migrate
 
-# 4. Collect static files
-echo "📁 Collecting static files..."
-python manage.py collectstatic --noinput
-
-# 5. Create superuser if it doesn't exist
-echo "👑 Creating superuser..."
-python manage.py shell << EOF
-from django.contrib.auth import get_user_model
-User = get_user_model()
-if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser(
-        username='admin',
-        email='admin@eatfast.cm',
-        password='EatFast2025!'
-    )
-    print('Superuser created: admin / EatFast2025!')
-else:
-    print('Superuser already exists')
-EOF
-
-echo "✅ Setup completed successfully!"
-echo "🌐 You can now access:"
-echo "   - API: http://localhost:8000/api/v1/"
-echo "   - Admin: http://localhost:8000/admin/"
-echo "   - Health Check: http://localhost:8000/api/v1/health/"
+echo "✅ Migration fix completed!"
