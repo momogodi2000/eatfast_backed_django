@@ -41,7 +41,7 @@ class User(AbstractUser):
             'The groups this user belongs to. A user will get all permissions '
             'granted to each of their groups.'
         ),
-        related_name="backend_user_set",  # This fixes the clash
+        related_name="backend_user_set",
         related_query_name="backend_user",
     )
     user_permissions = models.ManyToManyField(
@@ -49,7 +49,7 @@ class User(AbstractUser):
         verbose_name=_('user permissions'),
         blank=True,
         help_text=_('Specific permissions for this user.'),
-        related_name="backend_user_set",  # This fixes the clash
+        related_name="backend_user_set",
         related_query_name="backend_user",
     )
 
@@ -324,4 +324,63 @@ class PartnerDocument(models.Model):
         ('vehicle_registration', _('Carte grise')),
         ('business_plan', _('Plan d\'affaires')),
         ('financial_statements', _('États financiers')),
-        ('photo', _('
+        ('photo', _('Photo')),
+        ('other', _('Autre')),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    application = models.ForeignKey(PartnerApplication, on_delete=models.CASCADE, related_name='documents')
+    document_type = models.CharField(max_length=30, choices=DOCUMENT_TYPE_CHOICES, verbose_name=_('Type de document'))
+    file = models.FileField(upload_to=upload_partner_document, verbose_name=_('Fichier'))
+    original_filename = models.CharField(max_length=255, verbose_name=_('Nom de fichier original'))
+    file_size = models.PositiveIntegerField(verbose_name=_('Taille du fichier'))
+    mime_type = models.CharField(max_length=100, verbose_name=_('Type MIME'))
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name=_('Téléchargé le'))
+    
+    class Meta:
+        ordering = ['-uploaded_at']
+        verbose_name = _('Document partenaire')
+        verbose_name_plural = _('Documents partenaires')
+        unique_together = ['application', 'document_type']
+    
+    def __str__(self):
+        return f"{self.application.contact_name} - {self.get_document_type_display()}"
+    
+    def delete(self, *args, **kwargs):
+        """Delete file when model instance is deleted"""
+        if self.file:
+            if os.path.isfile(self.file.path):
+                os.remove(self.file.path)
+        super().delete(*args, **kwargs)
+
+# Analytics and Tracking Models
+class ContactAnalytics(models.Model):
+    """Model for contact form analytics"""
+    
+    date = models.DateField(unique=True)
+    total_messages = models.PositiveIntegerField(default=0)
+    new_messages = models.PositiveIntegerField(default=0)
+    resolved_messages = models.PositiveIntegerField(default=0)
+    avg_response_time_hours = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    
+    class Meta:
+        ordering = ['-date']
+        verbose_name = _('Analyse des contacts')
+        verbose_name_plural = _('Analyses des contacts')
+
+class PartnerAnalytics(models.Model):
+    """Model for partner application analytics"""
+    
+    date = models.DateField(unique=True)
+    total_applications = models.PositiveIntegerField(default=0)
+    pending_applications = models.PositiveIntegerField(default=0)
+    approved_applications = models.PositiveIntegerField(default=0)
+    rejected_applications = models.PositiveIntegerField(default=0)
+    restaurant_applications = models.PositiveIntegerField(default=0)
+    delivery_applications = models.PositiveIntegerField(default=0)
+    investor_applications = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['-date']
+        verbose_name = _('Analyse des partenaires')
+        verbose_name_plural = _('Analyses des partenaires')
