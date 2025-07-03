@@ -1,4 +1,3 @@
-
 # backend/admin.py
 from django.contrib import admin
 from django.utils.html import format_html
@@ -204,7 +203,10 @@ class ContactAnalyticsAdmin(admin.ModelAdmin):
     ]
     list_filter = ['date']
     date_hierarchy = 'date'
-    readonly_fields = '__all__'
+    readonly_fields = [
+        'date', 'total_messages', 'new_messages', 'resolved_messages',
+        'avg_response_time_hours'
+    ]
 
 @admin.register(PartnerAnalytics)
 class PartnerAnalyticsAdmin(admin.ModelAdmin):
@@ -214,7 +216,12 @@ class PartnerAnalyticsAdmin(admin.ModelAdmin):
     ]
     list_filter = ['date']
     date_hierarchy = 'date'
-    readonly_fields = '__all__'
+    readonly_fields = [
+        'date', 'total_applications', 'pending_applications',
+        'approved_applications', 'rejected_applications',
+        'restaurant_applications', 'delivery_applications',
+        'investor_applications'
+    ]
 
 # Customize admin site
 admin.site.site_header = "EatFast Administration"

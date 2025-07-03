@@ -1,2 +1,3 @@
 INFO 2025-07-03 11:15:37,457 autoreload 17192 6700 Watching for file changes with StatReloader
 INFO 2025-07-03 11:16:00,565 autoreload 17192 6700 D:\project personnelle\EatFast_backed_django\eatfast_backend\eatfast_backend\settings.py changed, reloading.
+INFO 2025-07-03 12:39:29,974 autoreload 6976 7768 Watching for file changes with StatReloader
