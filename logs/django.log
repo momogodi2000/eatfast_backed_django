@@ -4,3 +4,74 @@ INFO 2025-07-03 12:39:29,974 autoreload 6976 7768 Watching for file changes with
 INFO 2025-07-03 12:58:20,484 autoreload 13988 16504 Watching for file changes with StatReloader
 INFO 2025-07-03 13:01:31,954 autoreload 13988 16504 D:\project personnelle\EatFast_backed_django\eatfast_backend\backend\models.py changed, reloading.
 INFO 2025-07-03 13:01:34,718 autoreload 15224 13432 Watching for file changes with StatReloader
+INFO 2025-07-03 13:19:51,456 autoreload 1864 6716 Watching for file changes with StatReloader
+INFO 2025-07-03 13:21:03,405 utils 15840 6404 Contact analytics generated for 2025-07-03
+INFO 2025-07-03 13:21:03,432 utils 15840 6404 Partner analytics generated for 2025-07-03
+INFO 2025-07-03 13:21:03,459 utils 15840 6404 Contact analytics generated for 2025-07-02
+INFO 2025-07-03 13:21:03,490 utils 15840 6404 Partner analytics generated for 2025-07-02
+INFO 2025-07-03 13:21:03,565 utils 15840 6404 Contact analytics generated for 2025-07-01
+INFO 2025-07-03 13:21:03,588 utils 15840 6404 Partner analytics generated for 2025-07-01
+INFO 2025-07-03 13:21:03,609 utils 15840 6404 Contact analytics generated for 2025-06-30
+INFO 2025-07-03 13:21:03,639 utils 15840 6404 Partner analytics generated for 2025-06-30
+INFO 2025-07-03 13:21:03,661 utils 15840 6404 Contact analytics generated for 2025-06-29
+INFO 2025-07-03 13:21:03,684 utils 15840 6404 Partner analytics generated for 2025-06-29
+INFO 2025-07-03 13:21:03,708 utils 15840 6404 Contact analytics generated for 2025-06-28
+INFO 2025-07-03 13:21:03,732 utils 15840 6404 Partner analytics generated for 2025-06-28
+INFO 2025-07-03 13:21:03,753 utils 15840 6404 Contact analytics generated for 2025-06-27
+INFO 2025-07-03 13:21:03,777 utils 15840 6404 Partner analytics generated for 2025-06-27
+WARNING 2025-07-03 13:23:12,256 basehttp 1864 15260 "GET / HTTP/1.1" 404 2824
+WARNING 2025-07-03 13:23:12,510 basehttp 1864 15260 "GET /favicon.ico HTTP/1.1" 404 2875
+WARNING 2025-07-03 13:23:26,981 basehttp 1864 3832 "GET / HTTP/1.1" 404 2824
+WARNING 2025-07-03 13:23:27,170 basehttp 1864 3832 "GET /favicon.ico HTTP/1.1" 404 2875
+INFO 2025-07-03 13:32:00,609 basehttp 1864 15484 "GET /api/v1 HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:00,616 basehttp 1864 17004 "GET /api/v1/ HTTP/1.1" 200 219
+INFO 2025-07-03 13:32:00,647 basehttp 1864 17004 - Broken pipe from ('127.0.0.1', 57568)
+INFO 2025-07-03 13:32:00,930 basehttp 1864 3320 "GET /api/v1 HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:00,982 basehttp 1864 14644 "GET /admin HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:00,999 basehttp 1864 12396 "GET /api/v1/ HTTP/1.1" 200 219
+INFO 2025-07-03 13:32:01,017 basehttp 1864 12396 - Broken pipe from ('127.0.0.1', 57571)
+INFO 2025-07-03 13:32:01,057 basehttp 1864 8172 "GET /admin HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:01,148 basehttp 1864 13716 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-07-03 13:32:01,148 basehttp 1864 9852 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-07-03 13:32:01,572 basehttp 1864 4800 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4160
+INFO 2025-07-03 13:32:01,573 basehttp 1864 13176 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4160
+INFO 2025-07-03 13:32:01,575 basehttp 1864 4800 - Broken pipe from ('127.0.0.1', 57576)
+INFO 2025-07-03 13:32:01,577 basehttp 1864 13176 - Broken pipe from ('127.0.0.1', 57575)
+INFO 2025-07-03 13:32:01,592 basehttp 1864 1324 "GET /admin HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:01,609 basehttp 1864 7964 "GET /admin HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:01,617 basehttp 1864 2528 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-07-03 13:32:01,632 basehttp 1864 14980 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-07-03 13:32:01,645 basehttp 1864 16944 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4160
+INFO 2025-07-03 13:32:01,651 basehttp 1864 16944 - Broken pipe from ('127.0.0.1', 57583)
+INFO 2025-07-03 13:32:01,682 basehttp 1864 268 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4160
+INFO 2025-07-03 13:32:01,693 basehttp 1864 268 - Broken pipe from ('127.0.0.1', 57584)
+INFO 2025-07-03 13:32:58,878 basehttp 1864 9156 "GET /api/v1 HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:58,884 basehttp 1864 10372 "GET /api/v1/ HTTP/1.1" 200 219
+INFO 2025-07-03 13:32:58,896 basehttp 1864 10372 - Broken pipe from ('127.0.0.1', 57611)
+INFO 2025-07-03 13:32:59,195 basehttp 1864 9020 "GET /admin HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:59,244 basehttp 1864 12504 "GET /api/v1 HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:59,280 basehttp 1864 5736 "GET /api/v1/health HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:59,311 basehttp 1864 6996 "GET /admin HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:59,325 basehttp 1864 616 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-07-03 13:32:59,341 basehttp 1864 15124 "GET /api/v1/ HTTP/1.1" 200 219
+INFO 2025-07-03 13:32:59,348 basehttp 1864 15124 - Broken pipe from ('127.0.0.1', 57620)
+INFO 2025-07-03 13:32:59,368 basehttp 1864 16688 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-07-03 13:32:59,370 basehttp 1864 16448 "GET /api/v1/health/ HTTP/1.1" 200 182
+INFO 2025-07-03 13:32:59,420 basehttp 1864 6488 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4160
+INFO 2025-07-03 13:32:59,423 basehttp 1864 16448 - Broken pipe from ('127.0.0.1', 57621)
+INFO 2025-07-03 13:32:59,428 basehttp 1864 6488 - Broken pipe from ('127.0.0.1', 57624)
+INFO 2025-07-03 13:32:59,430 basehttp 1864 10336 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4160
+INFO 2025-07-03 13:32:59,439 basehttp 1864 10336 - Broken pipe from ('127.0.0.1', 57623)
+INFO 2025-07-03 13:32:59,447 basehttp 1864 10888 "GET /admin HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:59,464 basehttp 1864 11828 "GET /admin HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:59,465 basehttp 1864 14100 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-07-03 13:32:59,473 basehttp 1864 13344 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-07-03 13:32:59,501 basehttp 1864 15280 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4160
+INFO 2025-07-03 13:32:59,506 basehttp 1864 15868 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4160
+INFO 2025-07-03 13:32:59,507 basehttp 1864 15280 - Broken pipe from ('127.0.0.1', 57629)
+INFO 2025-07-03 13:32:59,511 basehttp 1864 15868 - Broken pipe from ('127.0.0.1', 57630)
+INFO 2025-07-03 13:32:59,637 basehttp 1864 5084 "GET /api/v1/health HTTP/1.1" 301 0
+INFO 2025-07-03 13:32:59,646 basehttp 1864 16712 "GET /api/v1/health/ HTTP/1.1" 200 182
+INFO 2025-07-03 13:32:59,648 basehttp 1864 16712 - Broken pipe from ('127.0.0.1', 57632)
+INFO 2025-07-03 13:34:09,292 autoreload 1864 6716 D:\project personnelle\EatFast_backed_django\eatfast_backend\eatfast_backend\settings.py changed, reloading.
+INFO 2025-07-03 13:34:39,779 autoreload 13720 17012 Watching for file changes with StatReloader

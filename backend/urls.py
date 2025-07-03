@@ -1,33 +1,22 @@
 # backend/urls.py
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 from . import views
 
-# Create router for ViewSets
-router = DefaultRouter()
-router.register(r'contact', views.ContactMessageViewSet)
-router.register(r'partner', views.PartnerApplicationViewSet)
-router.register(r'contact-analytics', views.ContactAnalyticsViewSet)
-router.register(r'partner-analytics', views.PartnerAnalyticsViewSet)
-router.register(r'partner-documents', views.PartnerDocumentViewSet)
+app_name = 'backend'
 
 urlpatterns = [
-    # Basic API endpoints
+    # API Root and Health
     path('', views.api_root, name='api-root'),
     path('health/', views.health_check, name='health-check'),
+    path('service-health/', views.service_health, name='service-health'),
     
-    # ViewSet URLs
-    path('', include(router.urls)),
+    # Contact endpoints
+    path('contact/', views.submit_contact_inquiry, name='contact-submit'),
     
-    # Configuration endpoints
-    path('contact/config/', views.contact_form_config, name='contact-form-config'),
-    path('partner/config/', views.partner_form_config, name='partner-form-config'),
+    # Partner application endpoints
+    path('partner-application/', views.submit_partner_application, name='partner-application-submit'),
+    path('partner-status/', views.check_application_status, name='partner-status-check'),
     
-    # Export endpoints
-    path('contact/export/', views.export_contact_messages, name='export-contact-messages'),
-    path('partner/export/', views.export_partner_applications, name='export-partner-applications'),
-    
-    # Search and analytics
-    path('search/', views.global_search, name='global-search'),
-    path('dashboard/stats/', views.dashboard_stats, name='dashboard-stats'),
+    # Newsletter endpoints
+    path('newsletter/', views.subscribe_newsletter, name='newsletter-subscribe'),
 ]

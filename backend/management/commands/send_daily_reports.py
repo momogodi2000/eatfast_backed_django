@@ -1,4 +1,3 @@
-
 # backend/management/commands/send_daily_reports.py
 from django.core.management.base import BaseCommand
 from django.core.mail import send_mail
@@ -64,3 +63,8 @@ class Command(BaseCommand):
                 )
                 self.stdout.write(
                     self.style.SUCCESS(f"Daily report sent to {len(admin_emails)} admins")
+                )
+            except Exception as e:
+                self.stdout.write(
+                    self.style.ERROR(f"Failed to send daily report: {str(e)}")
+                )

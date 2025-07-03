@@ -1,0 +1,78 @@
+
+<!-- templates/emails/partner_confirmation.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidature reçue - EatFast Partenaire</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #10b981, #f59e0b, #f97316); color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 30px; }
+        .footer { background: #333; color: white; padding: 20px; text-align: center; font-size: 14px; }
+        .success-box { background: #d1fae5; border: 1px solid #10b981; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .info-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 15px 0; }
+        .timeline { background: #f3f4f6; padding: 15px; border-radius: 5px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ EatFast</h1>
+            <h2>Candidature Partenaire Reçue</h2>
+        </div>
+        
+        <div class="content">
+            <div class="success-box">
+                <h3>✅ Candidature soumise avec succès !</h3>
+                <p>Bonjour {{ application.contact_name }},</p>
+                <p>Votre candidature pour devenir <strong>{{ partner_type_display }}</strong> a été reçue et enregistrée dans notre système.</p>
+            </div>
+            
+            <div class="info-box">
+                <h3>Informations de votre candidature</h3>
+                <p><strong>ID de candidature :</strong> <code>{{ application_id }}</code></p>
+                <p><strong>Type de partenariat :</strong> {{ partner_type_display }}</p>
+                <p><strong>Email :</strong> {{ application.email }}</p>
+                <p><strong>Date de soumission :</strong> {{ application.created_at|date:"d/m/Y à H:i" }}</p>
+                {% if application.business_name %}
+                <p><strong>Entreprise :</strong> {{ application.business_name }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="timeline">
+                <h3>🔄 Prochaines étapes</h3>
+                <ol>
+                    <li><strong>Examen de votre dossier</strong> - Notre équipe va examiner votre candidature et vos documents</li>
+                    <li><strong>Vérification</strong> - Nous pourrons vous contacter pour des informations supplémentaires</li>
+                    <li><strong>Décision</strong> - Vous recevrez une réponse sous {{ expected_response_days }}</li>
+                    <li><strong>Intégration</strong> - Si approuvé, nous vous guiderons dans le processus d'intégration</li>
+                </ol>
+            </div>
+            
+            <div class="info-box">
+                <h3>📞 Besoin d'aide ?</h3>
+                <p>Si vous avez des questions concernant votre candidature, n'hésitez pas à nous contacter :</p>
+                <ul>
+                    <li>📧 Email : {{ support_email }}</li>
+                    <li>🆔 Mentionnez votre ID : <code>{{ application_id }}</code></li>
+                </ul>
+            </div>
+            
+            <p><strong>Important :</strong> Conservez précieusement votre ID de candidature <code>{{ application_id }}</code> pour suivre l'évolution de votre dossier.</p>
+            
+            <p>Merci de votre intérêt pour EatFast. Nous sommes impatients de vous accueillir dans notre réseau de partenaires !</p>
+            
+            <p>Cordialement,<br>
+            L'équipe Partenariats {{ company_name }}</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 EatFast Cameroun. Tous droits réservés.</p>
+            <p>Yaoundé, Cameroun | support@eatfast.cm</p>
+        </div>
+    </div>
+</body>
+</html>

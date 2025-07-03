@@ -1,0 +1,68 @@
+
+<!-- templates/emails/newsletter_welcome.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue dans la communauté EatFast !</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #10b981, #f59e0b, #f97316); color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 30px; }
+        .footer { background: #333; color: white; padding: 20px; text-align: center; font-size: 14px; }
+        .welcome-box { background: #d1fae5; border: 1px solid #10b981; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+        .benefits { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .btn { display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ EatFast</h1>
+            <h2>Bienvenue dans notre communauté !</h2>
+        </div>
+        
+        <div class="content">
+            <div class="welcome-box">
+                <h3>🎉 Merci pour votre abonnement !</h3>
+                <p>Vous faites maintenant partie de la famille EatFast et recevrez nos dernières actualités directement dans votre boîte mail.</p>
+            </div>
+            
+            <div class="benefits">
+                <h3>Ce que vous recevrez :</h3>
+                <ul>
+                    <li>🍜 <strong>Nouveaux restaurants</strong> - Découvrez en avant-première les nouveaux partenaires</li>
+                    <li>🎯 <strong>Offres exclusives</strong> - Promotions spéciales réservées aux abonnés</li>
+                    <li>📰 <strong>Actualités culinaires</strong> - Tendances et nouveautés du monde de la gastronomie camerounaise</li>
+                    <li>💡 <strong>Conseils & astuces</strong> - Tips pour optimiser vos commandes</li>
+                    <li>🎁 <strong>Concours</strong> - Participez à nos jeux-concours exclusifs</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ website_url }}" class="btn">Découvrir EatFast</a>
+                <a href="{{ website_url }}/restaurants" class="btn">Parcourir les restaurants</a>
+            </div>
+            
+            <div style="background: #fef3c7; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <p><strong>💡 Le saviez-vous ?</strong> EatFast livre vos plats préférés en moins de 30 minutes dans Yaoundé et Douala, avec plus de 1000 restaurants partenaires !</p>
+            </div>
+            
+            <p>Encore une fois, merci de nous faire confiance. Nous nous engageons à vous offrir la meilleure expérience culinaire possible !</p>
+            
+            <p>Bon appétit,<br>
+            L'équipe {{ company_name }}</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 EatFast Cameroun. Tous droits réservés.</p>
+            <p>Yaoundé, Cameroun | support@eatfast.cm</p>
+            {% if unsubscribe_url %}
+            <p><a href="{{ unsubscribe_url }}" style="color: #ccc;">Se désabonner</a></p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

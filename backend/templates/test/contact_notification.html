@@ -1,0 +1,65 @@
+
+<!-- templates/emails/contact_notification.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelle demande de contact - EatFast Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #1f2937; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 30px; }
+        .alert { background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .info-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 15px 0; }
+        .btn { display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 Nouvelle demande de contact</h1>
+        </div>
+        
+        <div class="content">
+            <div class="alert">
+                <strong>Action requise :</strong> Une nouvelle demande de contact a été soumise et nécessite votre attention.
+            </div>
+            
+            <div class="info-box">
+                <h3>Détails de la demande</h3>
+                <p><strong>Nom :</strong> {{ inquiry.name }}</p>
+                <p><strong>Email :</strong> {{ inquiry.email }}</p>
+                <p><strong>Téléphone :</strong> {{ inquiry.phone|default:"Non fourni" }}</p>
+                <p><strong>Entreprise :</strong> {{ inquiry.company|default:"Non spécifiée" }}</p>
+                <p><strong>Sujet :</strong> {{ inquiry.get_subject_display }}</p>
+                <p><strong>Méthode de contact préférée :</strong> {{ inquiry.get_preferred_contact_method_display }}</p>
+                <p><strong>Date de soumission :</strong> {{ inquiry.created_at|date:"d/m/Y à H:i" }}</p>
+            </div>
+            
+            <div class="info-box">
+                <h3>Message</h3>
+                <p style="background: #f3f4f6; padding: 15px; border-radius: 5px; white-space: pre-wrap;">{{ inquiry.message }}</p>
+            </div>
+            
+            {% if inquiry.website %}
+            <div class="info-box">
+                <h3>Site web</h3>
+                <p><a href="{{ inquiry.website }}" target="_blank">{{ inquiry.website }}</a></p>
+            </div>
+            {% endif %}
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ admin_url }}" class="btn">Gérer cette demande dans l'admin</a>
+            </div>
+            
+            <div class="info-box">
+                <h3>Informations techniques</h3>
+                <p><strong>IP :</strong> {{ inquiry.ip_address|default:"Non disponible" }}</p>
+                <p><strong>Navigateur :</strong> {{ inquiry.user_agent|truncatechars:100|default:"Non disponible" }}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

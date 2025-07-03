@@ -1,0 +1,56 @@
+<!-- templates/emails/contact_confirmation.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de réception - EatFast</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #10b981, #f59e0b, #f97316); color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 30px; }
+        .footer { background: #333; color: white; padding: 20px; text-align: center; font-size: 14px; }
+        .btn { display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ EatFast</h1>
+            <h2>Confirmation de réception</h2>
+        </div>
+        
+        <div class="content">
+            <h3>Bonjour {{ name }},</h3>
+            
+            <p>Nous avons bien reçu votre message concernant : <strong>{{ subject_display }}</strong></p>
+            
+            <p>Votre demande a été enregistrée avec succès et notre équipe vous répondra dans les plus brefs délais.</p>
+            
+            <div style="background: #e5f7ff; padding: 15px; border-left: 4px solid #10b981; margin: 20px 0;">
+                <h4>Résumé de votre demande :</h4>
+                <p><strong>Sujet :</strong> {{ subject_display }}</p>
+                <p><strong>Date :</strong> {{ created_at|date:"d/m/Y à H:i" }}</p>
+                <p><strong>Message :</strong> {{ message|truncatewords:50 }}</p>
+            </div>
+            
+            <p>Si vous avez des questions urgentes, n'hésitez pas à nous contacter :</p>
+            <ul>
+                <li>📧 Email : {{ support_email }}</li>
+                <li>📞 Téléphone : {{ support_phone }}</li>
+            </ul>
+            
+            <p>Merci de votre confiance en EatFast !</p>
+            
+            <p>Cordialement,<br>
+            L'équipe {{ company_name }}</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 EatFast Cameroun. Tous droits réservés.</p>
+            <p>Yaoundé, Cameroun | support@eatfast.cm</p>
+        </div>
+    </div>
+</body>
+</html>

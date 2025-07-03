@@ -2,228 +2,278 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
-from django.utils.safestring import mark_safe
-from django.http import HttpResponse
 from django.utils import timezone
-import csv
+from .models import ContactInquiry, PartnerApplication, PartnerDocument, NewsletterSubscription
+from .services.email_service import EmailService
 
-from .models import (
-    User, ContactMessage, ContactResponse, PartnerApplication,
-    PartnerDocument, ContactAnalytics, PartnerAnalytics
-)
+# Initialize email service
+email_service = EmailService()
 
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ['username', 'email', 'user_type', 'is_phone_verified', 'date_joined']
-    list_filter = ['user_type', 'is_phone_verified', 'is_active']
-    search_fields = ['username', 'email', 'phone_number']
-    readonly_fields = ['id', 'date_joined', 'last_login']
-
-class ContactResponseInline(admin.TabularInline):
-    model = ContactResponse
-    extra = 0
-    readonly_fields = ['created_at']
-
-@admin.register(ContactMessage)
-class ContactMessageAdmin(admin.ModelAdmin):
+@admin.register(ContactInquiry)
+class ContactInquiryAdmin(admin.ModelAdmin):
     list_display = [
-        'name', 'email', 'subject', 'status', 'priority', 
-        'created_at', 'assigned_to'
+        'name', 'email', 'subject', 'status', 'created_at', 
+        'responded_at', 'view_message'
     ]
     list_filter = [
-        'status', 'priority', 'subject', 'preferred_contact_method',
-        'created_at', 'resolved_at'
+        'status', 'subject', 'preferred_contact_method', 'created_at'
     ]
     search_fields = ['name', 'email', 'company', 'message']
     readonly_fields = [
-        'id', 'created_at', 'updated_at', 'resolved_at',
-        'utm_source', 'utm_medium', 'utm_campaign', 'ip_address'
+        'created_at', 'updated_at', 'ip_address', 'user_agent'
     ]
-    inlines = [ContactResponseInline]
-    date_hierarchy = 'created_at'
-    
     fieldsets = (
         ('Informations de contact', {
             'fields': ('name', 'email', 'phone', 'company', 'website')
         }),
-        ('Message', {
+        ('Demande', {
             'fields': ('subject', 'message', 'preferred_contact_method')
         }),
         ('Gestion', {
-            'fields': ('status', 'priority', 'assigned_to')
+            'fields': ('status', 'assigned_to', 'admin_notes', 'responded_at')
         }),
-        ('Tracking', {
-            'fields': ('utm_source', 'utm_medium', 'utm_campaign', 'ip_address'),
-            'classes': ('collapse',)
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at', 'resolved_at'),
+        ('Informations techniques', {
+            'fields': ('ip_address', 'user_agent', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         })
     )
     
-    actions = ['mark_as_resolved', 'export_to_csv']
+    def view_message(self, obj):
+        if len(obj.message) > 50:
+            return obj.message[:50] + '...'
+        return obj.message
+    view_message.short_description = 'Message (aperçu)'
+    
+    def save_model(self, request, obj, form, change):
+        # Track status changes and send notifications
+        if change:
+            old_obj = ContactInquiry.objects.get(pk=obj.pk)
+            if old_obj.status != obj.status and obj.status == 'resolved':
+                obj.responded_at = timezone.now()
+        
+        super().save_model(request, obj, form, change)
+    
+    actions = ['mark_as_resolved', 'mark_as_in_progress']
     
     def mark_as_resolved(self, request, queryset):
-        updated = queryset.update(
-            status='resolved',
-            resolved_at=timezone.now()
-        )
-        self.message_user(request, f'{updated} messages marked as resolved.')
-    mark_as_resolved.short_description = "Mark selected messages as resolved"
+        count = queryset.update(status='resolved', responded_at=timezone.now())
+        self.message_user(request, f'{count} demande(s) marquée(s) comme résolue(s).')
+    mark_as_resolved.short_description = 'Marquer comme résolu'
     
-    def export_to_csv(self, request, queryset):
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="contact_messages.csv"'
-        
-        writer = csv.writer(response)
-        writer.writerow([
-            'Name', 'Email', 'Phone', 'Company', 'Subject', 'Status',
-            'Priority', 'Created', 'Resolved'
-        ])
-        
-        for obj in queryset:
-            writer.writerow([
-                obj.name, obj.email, obj.phone or '', obj.company or '',
-                obj.get_subject_display(), obj.get_status_display(),
-                obj.get_priority_display(), obj.created_at.strftime('%Y-%m-%d %H:%M'),
-                obj.resolved_at.strftime('%Y-%m-%d %H:%M') if obj.resolved_at else ''
-            ])
-        
-        return response
-    export_to_csv.short_description = "Export selected to CSV"
+    def mark_as_in_progress(self, request, queryset):
+        count = queryset.update(status='in_progress')
+        self.message_user(request, f'{count} demande(s) marquée(s) en cours de traitement.')
+    mark_as_in_progress.short_description = 'Marquer en cours de traitement'
+
 
 class PartnerDocumentInline(admin.TabularInline):
     model = PartnerDocument
+    readonly_fields = ['file_name', 'file_size', 'mime_type', 'created_at', 'is_verified']
     extra = 0
-    readonly_fields = ['uploaded_at', 'file_size', 'mime_type']
+    
+    def has_add_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(PartnerApplication)
 class PartnerApplicationAdmin(admin.ModelAdmin):
     list_display = [
-        'contact_name', 'email', 'partner_type', 'status',
-        'city', 'created_at', 'reviewer'
+        'contact_name', 'partner_type', 'email', 'city', 
+        'status', 'created_at', 'view_application_id'
     ]
     list_filter = [
-        'partner_type', 'status', 'legal_status', 'vehicle_type',
-        'investment_type', 'city', 'created_at', 'reviewed_at'
+        'partner_type', 'status', 'legal_status', 'created_at', 'city'
     ]
     search_fields = [
-        'contact_name', 'email', 'business_name', 'city', 'cuisine_type'
+        'contact_name', 'email', 'business_name', 'application_id'
     ]
     readonly_fields = [
-        'id', 'created_at', 'updated_at', 'reviewed_at', 'approved_at'
+        'application_id', 'created_at', 'updated_at', 
+        'ip_address', 'user_agent'
     ]
     inlines = [PartnerDocumentInline]
-    date_hierarchy = 'created_at'
     
     fieldsets = (
-        ('Type de partenaire', {
-            'fields': ('partner_type', 'status')
+        ('Informations de base', {
+            'fields': ('application_id', 'partner_type', 'contact_name', 'email', 'phone')
         }),
-        ('Informations de contact', {
-            'fields': ('contact_name', 'email', 'phone')
-        }),
-        ('Informations d\'entreprise', {
-            'fields': (
-                'business_name', 'cuisine_type', 'capacity', 'opening_hours',
-                'legal_status', 'tax_id'
-            ),
+        ('Informations business', {
+            'fields': ('business_name', 'cuisine_type', 'capacity', 'opening_hours'),
             'classes': ('collapse',)
         }),
         ('Localisation', {
-            'fields': ('address', 'city', 'latitude', 'longitude'),
+            'fields': ('address', 'city'),
             'classes': ('collapse',)
         }),
-        ('Spécifique Livreur', {
+        ('Informations légales', {
+            'fields': ('legal_status', 'tax_id'),
+            'classes': ('collapse',)
+        }),
+        ('Livreur', {
             'fields': ('vehicle_type', 'driving_license'),
             'classes': ('collapse',)
         }),
-        ('Spécifique Investisseur', {
+        ('Investisseur', {
             'fields': ('investment_amount', 'investment_type', 'business_experience'),
             'classes': ('collapse',)
         }),
-        ('Spécifique Autre', {
+        ('Autre service', {
             'fields': ('service_type',),
             'classes': ('collapse',)
         }),
-        ('Examen', {
-            'fields': ('reviewer', 'review_notes', 'rejection_reason')
+        ('Gestion candidature', {
+            'fields': ('status', 'terms_accepted', 'assigned_reviewer', 'reviewer_notes', 'reviewed_at', 'approval_date')
         }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at', 'reviewed_at', 'approved_at'),
+        ('Informations techniques', {
+            'fields': ('ip_address', 'user_agent', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         })
     )
     
-    actions = ['approve_applications', 'export_to_csv']
+    def view_application_id(self, obj):
+        return str(obj.application_id)[:8] + '...'
+    view_application_id.short_description = 'ID candidature'
+    
+    def save_model(self, request, obj, form, change):
+        # Track status changes and send email notifications
+        send_email = False
+        old_status = None
+        
+        if change:
+            old_obj = PartnerApplication.objects.get(pk=obj.pk)
+            if old_obj.status != obj.status:
+                old_status = old_obj.status
+                send_email = True
+                obj.reviewed_at = timezone.now()
+                if obj.status == 'approved':
+                    obj.approval_date = timezone.now()
+        
+        super().save_model(request, obj, form, change)
+        
+        # Send status update email
+        if send_email and old_status:
+            try:
+                email_service.send_partner_status_update(obj, old_status, obj.status)
+            except Exception as e:
+                self.message_user(request, f'Erreur envoi email: {str(e)}', level='WARNING')
+    
+    actions = ['approve_applications', 'reject_applications', 'mark_under_review']
     
     def approve_applications(self, request, queryset):
-        updated = 0
-        for application in queryset.filter(status='pending'):
-            application.approve(request.user)
-            updated += 1
+        count = 0
+        for application in queryset:
+            old_status = application.status
+            application.status = 'approved'
+            application.reviewed_at = timezone.now()
+            application.approval_date = timezone.now()
+            application.save()
+            
+            try:
+                email_service.send_partner_status_update(application, old_status, 'approved')
+                count += 1
+            except Exception as e:
+                self.message_user(request, f'Erreur email pour {application.email}: {str(e)}', level='WARNING')
         
-        self.message_user(request, f'{updated} applications approved.')
-    approve_applications.short_description = "Approve selected applications"
+        self.message_user(request, f'{count} candidature(s) approuvée(s).')
+    approve_applications.short_description = 'Approuver les candidatures sélectionnées'
     
-    def export_to_csv(self, request, queryset):
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="partner_applications.csv"'
+    def reject_applications(self, request, queryset):
+        count = 0
+        for application in queryset:
+            old_status = application.status
+            application.status = 'rejected'
+            application.reviewed_at = timezone.now()
+            application.save()
+            
+            try:
+                email_service.send_partner_status_update(application, old_status, 'rejected')
+                count += 1
+            except Exception as e:
+                self.message_user(request, f'Erreur email pour {application.email}: {str(e)}', level='WARNING')
         
-        writer = csv.writer(response)
-        writer.writerow([
-            'Contact Name', 'Email', 'Partner Type', 'Business Name',
-            'City', 'Status', 'Created', 'Reviewed'
-        ])
-        
-        for obj in queryset:
-            writer.writerow([
-                obj.contact_name, obj.email, obj.get_partner_type_display(),
-                obj.business_name or '', obj.city or '', obj.get_status_display(),
-                obj.created_at.strftime('%Y-%m-%d %H:%M'),
-                obj.reviewed_at.strftime('%Y-%m-%d %H:%M') if obj.reviewed_at else ''
-            ])
-        
-        return response
-    export_to_csv.short_description = "Export selected to CSV"
+        self.message_user(request, f'{count} candidature(s) rejetée(s).')
+    reject_applications.short_description = 'Rejeter les candidatures sélectionnées'
+    
+    def mark_under_review(self, request, queryset):
+        count = queryset.update(status='under_review', reviewed_at=timezone.now())
+        self.message_user(request, f'{count} candidature(s) marquée(s) en cours d\'examen.')
+    mark_under_review.short_description = 'Marquer en cours d\'examen'
+
 
 @admin.register(PartnerDocument)
 class PartnerDocumentAdmin(admin.ModelAdmin):
-    list_display = ['application', 'document_type', 'original_filename', 'file_size', 'uploaded_at']
-    list_filter = ['document_type', 'mime_type', 'uploaded_at']
-    search_fields = ['application__contact_name', 'original_filename']
-    readonly_fields = ['uploaded_at', 'file_size', 'mime_type']
-
-@admin.register(ContactAnalytics)
-class ContactAnalyticsAdmin(admin.ModelAdmin):
     list_display = [
-        'date', 'total_messages', 'new_messages', 'resolved_messages',
-        'avg_response_time_hours'
+        'application', 'document_type', 'file_name', 
+        'file_size_display', 'is_verified', 'created_at'
     ]
-    list_filter = ['date']
-    date_hierarchy = 'date'
-    readonly_fields = [
-        'date', 'total_messages', 'new_messages', 'resolved_messages',
-        'avg_response_time_hours'
-    ]
+    list_filter = ['document_type', 'is_verified', 'mime_type', 'created_at']
+    search_fields = ['application__contact_name', 'application__email', 'file_name']
+    readonly_fields = ['file_name', 'file_size', 'mime_type', 'created_at']
+    
+    def file_size_display(self, obj):
+        size = obj.file_size
+        if size < 1024:
+            return f'{size} B'
+        elif size < 1024 * 1024:
+            return f'{size / 1024:.1f} KB'
+        else:
+            return f'{size / (1024 * 1024):.1f} MB'
+    file_size_display.short_description = 'Taille'
+    
+    actions = ['verify_documents', 'unverify_documents']
+    
+    def verify_documents(self, request, queryset):
+        count = queryset.update(is_verified=True)
+        self.message_user(request, f'{count} document(s) vérifié(s).')
+    verify_documents.short_description = 'Marquer comme vérifié'
+    
+    def unverify_documents(self, request, queryset):
+        count = queryset.update(is_verified=False)
+        self.message_user(request, f'{count} document(s) marqué(s) comme non vérifié.')
+    unverify_documents.short_description = 'Marquer comme non vérifié'
 
-@admin.register(PartnerAnalytics)
-class PartnerAnalyticsAdmin(admin.ModelAdmin):
+
+@admin.register(NewsletterSubscription)
+class NewsletterSubscriptionAdmin(admin.ModelAdmin):
     list_display = [
-        'date', 'total_applications', 'pending_applications',
-        'approved_applications', 'restaurant_applications'
+        'email', 'preferred_language', 'is_active', 
+        'subscribed_at', 'confirmed_at'
     ]
-    list_filter = ['date']
-    date_hierarchy = 'date'
+    list_filter = [
+        'is_active', 'preferred_language', 'subscribed_at', 'confirmed_at'
+    ]
+    search_fields = ['email']
     readonly_fields = [
-        'date', 'total_applications', 'pending_applications',
-        'approved_applications', 'rejected_applications',
-        'restaurant_applications', 'delivery_applications',
-        'investor_applications'
+        'subscribed_at', 'confirmation_sent_at', 'confirmed_at',
+        'unsubscribed_at', 'ip_address', 'user_agent'
     ]
+    
+    actions = ['activate_subscriptions', 'deactivate_subscriptions', 'send_welcome_email']
+    
+    def activate_subscriptions(self, request, queryset):
+        count = queryset.update(is_active=True, unsubscribed_at=None)
+        self.message_user(request, f'{count} abonnement(s) activé(s).')
+    activate_subscriptions.short_description = 'Activer les abonnements'
+    
+    def deactivate_subscriptions(self, request, queryset):
+        count = queryset.update(is_active=False, unsubscribed_at=timezone.now())
+        self.message_user(request, f'{count} abonnement(s) désactivé(s).')
+    deactivate_subscriptions.short_description = 'Désactiver les abonnements'
+    
+    def send_welcome_email(self, request, queryset):
+        count = 0
+        for subscription in queryset.filter(is_active=True):
+            try:
+                email_service.send_newsletter_welcome(subscription)
+                count += 1
+            except Exception as e:
+                self.message_user(request, f'Erreur email pour {subscription.email}: {str(e)}', level='WARNING')
+        
+        self.message_user(request, f'{count} email(s) de bienvenue envoyé(s).')
+    send_welcome_email.short_description = 'Envoyer email de bienvenue'
+
 
 # Customize admin site
-admin.site.site_header = "EatFast Administration"
-admin.site.site_title = "EatFast Admin"
-admin.site.index_title = "Welcome to EatFast Administration"
+admin.site.site_header = 'EatFast Administration'
+admin.site.site_title = 'EatFast Admin'
+admin.site.index_title = 'Tableau de bord administrateur'
