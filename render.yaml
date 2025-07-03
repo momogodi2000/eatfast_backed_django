@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: eatfast-backend
+    env: python
+    buildCommand: "pip install -r requirements.txt; python manage.py collectstatic --no-input; python manage.py migrate"
+    startCommand: "gunicorn eatfast_backend.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: eatfast-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".render.com"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://your-frontend-domain.com"
+
+databases:
+  - name: eatfast-db
+    databaseName: eatfast_db
+    user: eatfast_user
